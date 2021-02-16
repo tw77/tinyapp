@@ -35,7 +35,9 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  let newRandomString = generateRandomString();
+  urlDatabase[newRandomString] = req.body.longURL;
+  res.send('Ok');         // Respond with 'Ok' (we will replace this)
 });
 
 // what "app.get("/urls/:id", ...) route definition" ? (https://web.compass.lighthouselabs.ca/activities/180)
