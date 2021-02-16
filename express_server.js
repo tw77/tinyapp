@@ -35,9 +35,10 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  let newRandomString = generateRandomString();
-  urlDatabase[newRandomString] = req.body.longURL;
-  res.send('Ok');         // Respond with 'Ok' (we will replace this)
+  let newShortURL = generateRandomString();
+  urlDatabase[newShortURL] = req.body.longURL;
+  // res.send('Ok');         // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${newShortURL}`);  
 });
 
 // what "app.get("/urls/:id", ...) route definition" ? (https://web.compass.lighthouselabs.ca/activities/180)
@@ -52,9 +53,12 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
 
 
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
-}
+};
