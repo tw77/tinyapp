@@ -21,8 +21,9 @@ const urlDatabase = {
 
 
 
+// Gets:
 
-// My URLs page
+// My URLs index page
 app.get("/urls", (req, res) => {
   const templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -34,7 +35,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// show / edit URL page
+// Show / Edit URL page
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]};
@@ -43,26 +44,28 @@ app.get("/urls/:shortURL", (req, res) => {
 
 
 
+// Posts:
 
-// add new
+// add a new URL to the index
 app.post("/urls", (req, res) => {
   let newShortURL = generateRandomString();
   urlDatabase[newShortURL] = req.body.longURL;
   res.redirect('/urls'); 
 });
 
-// update
+// update the long URL of an existing URL in the index
 app.post("/urls/:shortURL", (req, res) => {
   const newLongURL = req.body.newLongURL;
   urlDatabase[req.params.shortURL] = newLongURL;
-  res.redirect("/urls");
+  res.redirect("/urls");  
 });
 
-// delete
+// delete a URL from the index
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
+
 
 // login
 app.post("/login", (req, res) => {
