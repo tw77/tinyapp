@@ -37,26 +37,29 @@ const users = {
 
 // My URLs index page
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  console.log("test");
+  console.log(req.cookies["user_id"]);
+  console.log(users[req.cookies["user_id"]]);
+  const templateVars = { user: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 // Create New URL page
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
 // Show / Edit URL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL,
+  const templateVars = { user: users[req.cookies["user_id"]], shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
 });
 
 // Register page
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("register", templateVars);
 });
 
@@ -100,7 +103,7 @@ app.post("/logout", (req, res) => {
 // register
 app.post("/register", (req, res) => {
   let newUserID = generateRandomString();
-  users["newUserID"] = { id: newUserID, email: req.body.email, password: req.body.password };
+  users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
   res.cookie("user_id", newUserID);
   console.log(users);
   res.redirect("/urls");
