@@ -34,11 +34,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
+  console.log(req.body);
   let newShortURL = generateRandomString();
   urlDatabase[newShortURL] = req.body.longURL;
-  // res.send('Ok');         // Respond with 'Ok' (we will replace this)
-  res.redirect(`/urls/${newShortURL}`);  
+  // res.redirect(`/urls/${newShortURL}`);  
+  res.redirect('/urls/');  
 });
 
 // what "app.get("/urls/:id", ...) route definition" ? (https://web.compass.lighthouselabs.ca/activities/180)
@@ -56,12 +56,25 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
+}); 
+
+// "have an Edit link appear next to each URL that takes you to the appropriate urls_show page."
+app.get("/urls/:shortURL", (req, res) => {
+  res.redirect(`/urls/${req.params.shortURL}`);
+});
+
+// "Add a POST route that updates a URL resource; POST /urls/:id"
+app.post("/urls/:shortURL", (req, res) => {
+  let newLongURL = req.body.newLongURL
+  urlDatabase[req.params.shortURL] = newLongURL
+  res.redirect("/urls");  
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
+
 
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
