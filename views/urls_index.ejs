@@ -27,16 +27,15 @@
             <td><%= id %></td>
             <td><%= urls[id] %></td>
             <td><form method="GET" action="/urls/<%= id %>">
-              <input type="submit" value="Edit">
+              <button type="submit" class="btn btn-outline-primary">Edit</button> 
             </form> </td>
             <td><form method="POST" action="/urls/<%= id %>/delete">
-              <input type="submit" value="Delete">
+              <button type="submit" class="btn btn-outline-primary">Delete</button> 
             </form> </td>
           </tr>
         <% } %>
       </tbody>
     </table>
-    <!-- Shorten URL <a href='#'>here</a>. -->
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

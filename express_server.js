@@ -7,75 +7,80 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+function generateRandomString() {
+  return Math.random().toString(36).substr(2, 6);
+}
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-app.post("/urls", (req, res) => {
-  console.log(req.body);
-  let newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = req.body.longURL;
-  // res.redirect(`/urls/${newShortURL}`);  
-  res.redirect('/urls/');  
-});
-
-// what "app.get("/urls/:id", ...) route definition" ? (https://web.compass.lighthouselabs.ca/activities/180)
-
+// My URLs page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+// Create New URL page
+app.get("/urls/new", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
+});
+
+// show / edit URL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = { username: req.cookies["username"], shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-}); 
 
-// "have an Edit link appear next to each URL that takes you to the appropriate urls_show page."
-app.get("/urls/:shortURL", (req, res) => {
-  res.redirect(`/urls/${req.params.shortURL}`);
+
+
+// add new
+app.post("/urls", (req, res) => {
+  let newShortURL = generateRandomString();
+  urlDatabase[newShortURL] = req.body.longURL;
+  res.redirect('/urls'); 
 });
 
-// "Add a POST route that updates a URL resource; POST /urls/:id"
+// update
 app.post("/urls/:shortURL", (req, res) => {
-  let newLongURL = req.body.newLongURL
-  urlDatabase[req.params.shortURL] = newLongURL
-  res.redirect("/urls");  
+  const newLongURL = req.body.newLongURL;
+  urlDatabase[req.params.shortURL] = newLongURL;
+  res.redirect("/urls");
 });
 
+// delete
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
+// login
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
 
-function generateRandomString() {
-  return Math.random().toString(36).substr(2, 6);
-};
+// logout
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
+
+
+
+
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
