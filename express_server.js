@@ -65,6 +65,12 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+// Login page
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+});
+
 
 
 // Posts:
@@ -112,10 +118,8 @@ app.post("/register", (req, res) => {
     let newUserID = generateRandomString();
     users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
     res.cookie("user_id", newUserID);
-    // console.log(users);
     res.redirect("/urls");
   }
-  // console.log(users);
 });
 
 
