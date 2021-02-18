@@ -42,14 +42,32 @@ function emailSearch(emailToFind) {
   else return false;
 }
 
+function urlsForUser(id) {
+  let personalDatabase = {};
+  for (const url in urlDatabase) {
+    if (id === urlDatabase[url].userID) {
+      personalDatabase[url] = urlDatabase[url];
+    }
+  }
+  return personalDatabase;
+}
+
+
 
 // Gets:
 
 // My URLs index page
 app.get("/urls", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]], urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.status(400).send('You are not logged in. Please log in or register.')
+  } else {
+    const personalDatabase = urlsForUser(req.cookies["user_id"])
+    const templateVars = { user: users[req.cookies["user_id"]], urls: personalDatabase };
+    res.render("urls_index", templateVars);
+  }
 });
+
+
 
 // Create New URL page
 app.get("/urls/new", (req, res) => {
