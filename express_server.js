@@ -19,6 +19,11 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// const urlDatabase = {
+//   "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "aJ48lW" },
+//   "9sm5xK": { longURL: "https://www.google.com", userID: "b24l7i" },
+// };
+
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -74,6 +79,12 @@ app.get("/login", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("login", templateVars);
 });
+
+// Redirect to URL
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+}); 
 
 
 
