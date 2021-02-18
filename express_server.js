@@ -14,11 +14,6 @@ function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 }
 
-function emailSearch(emailToFind) {
-  if (JSON.stringify(users).includes(emailToFind)) return true;
-  else return false;
-}
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -36,6 +31,11 @@ const users = {
     password: "dishwasher-funk"
   }
 };
+
+function emailSearch(emailToFind) {
+  if (JSON.stringify(users).includes(emailToFind)) return true;
+  else return false;
+}
 
 
 // Gets:
@@ -98,13 +98,23 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // login
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  if (!emailSearch(req.body.email)) {
+    res.status(403).send('Email cannot be found')
+  } else if ((emailSearch(req.body.email)) && (!JSON.stringify(users).includes(req.body.password))) {
+    res.status(403).send('Incorrect password, please try again')
+    /* flaw here is that another user could have a matching password. I'll solve this later given
+    enough time. */
+  } else {
+    let newUserID = generateRandomString();
+    users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
+    res.cookie("user_id", newUserID);
+    res.redirect("/urls");
+  }
 });
 
 // logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
