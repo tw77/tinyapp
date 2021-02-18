@@ -48,8 +48,12 @@ app.get("/urls", (req, res) => {
 
 // Create New URL page
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login")
+  } else {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("urls_new", templateVars);
+  }
 });
 
 // Show / Edit URL page
@@ -79,7 +83,7 @@ app.get("/login", (req, res) => {
 app.post("/urls", (req, res) => {
   let newShortURL = generateRandomString();
   urlDatabase[newShortURL] = req.body.longURL;
-  res.redirect('/urls'); 
+  res.redirect("/urls"); 
 });
 
 // update the long URL of an existing URL in the index
