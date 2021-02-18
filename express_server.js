@@ -14,6 +14,11 @@ function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 }
 
+function emailSearch(emailToFind) {
+  if (JSON.stringify(users).includes(emailToFind)) return true;
+  else return false;
+}
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -37,9 +42,6 @@ const users = {
 
 // My URLs index page
 app.get("/urls", (req, res) => {
-  console.log("test");
-  console.log(req.cookies["user_id"]);
-  console.log(users[req.cookies["user_id"]]);
   const templateVars = { user: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
@@ -102,11 +104,18 @@ app.post("/logout", (req, res) => {
 
 // register
 app.post("/register", (req, res) => {
-  let newUserID = generateRandomString();
-  users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
-  res.cookie("user_id", newUserID);
-  console.log(users);
-  res.redirect("/urls");
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send('Missing input')
+  } else if (emailSearch(req.body.email)) {
+    res.status(400).send('Email already registered')
+  } else {
+    let newUserID = generateRandomString();
+    users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
+    res.cookie("user_id", newUserID);
+    // console.log(users);
+    res.redirect("/urls");
+  }
+  // console.log(users);
 });
 
 
@@ -117,3 +126,9 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+
+
+
+
