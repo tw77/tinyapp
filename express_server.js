@@ -67,8 +67,6 @@ app.get("/urls", (req, res) => {
   }
 });
 
-
-
 // Create New URL page
 app.get("/urls/new", (req, res) => {
   if (!req.cookies["user_id"]) {
@@ -118,15 +116,23 @@ app.post("/urls", (req, res) => {
 
 // update the long URL of an existing URL in the index
 app.post("/urls/:shortURL", (req, res) => {
-  const newLongURL = req.body.newLongURL;
-  urlDatabase[req.params.shortURL] = newLongURL;
-  res.redirect("/urls");  
+  if (!req.cookies["user_id"]) {
+    res.status(400).send('Please log in or register in order to edit URLs.')
+  } else {
+    const newLongURL = req.body.newLongURL;
+    urlDatabase[req.params.shortURL] = { longURL: newLongURL, userID: req.cookies["user_id"] };
+    res.redirect("/urls");  
+  }
 });
 
 // delete a URL from the index
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  if (!req.cookies["user_id"]) {
+    res.status(400).send('Please log in or register in order to delete URLs.')
+  } else {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  }
 });
 
 
