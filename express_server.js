@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -37,6 +38,17 @@ const users = {
   }
 };
 
+const usersByEmail = {
+  "user@example.com": {
+    password: "purple-monkey-dinosaur", 
+    id: "userRandomID" 
+  },
+  "user@example.com": {
+    password: "dishwasher-funk", 
+    id: "user2RandomID"
+  }
+};
+
 function emailSearch(emailToFind) {
   if (JSON.stringify(users).includes(emailToFind)) return true;
   else return false;
@@ -61,7 +73,9 @@ app.get("/urls", (req, res) => {
   if (!req.cookies["user_id"]) {
     res.status(400).send('You are not logged in. Please log in or register.')
   } else {
+    console.log("urlDatabase", urlDatabase);
     const personalDatabase = urlsForUser(req.cookies["user_id"])
+    console.log("personal", personalDatabase);
     const templateVars = { user: users[req.cookies["user_id"]], urls: personalDatabase };
     res.render("urls_index", templateVars);
   }
@@ -136,27 +150,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
-// login
-app.post("/login", (req, res) => {
-  if (!emailSearch(req.body.email)) {
-    res.status(403).send('Email cannot be found')
-  } else if ((emailSearch(req.body.email)) && (!JSON.stringify(users).includes(req.body.password))) {
-    res.status(403).send('Incorrect password, please try again')
-    /* flaw here is that another user could have a matching password. I'll solve this later given
-    enough time. */
-  } else {
-    let newUserID = generateRandomString();
-    users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
-    res.cookie("user_id", newUserID);
-    res.redirect("/urls");
-  }
-});
-
-// logout
-app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
-  res.redirect("/urls");
-});
 
 // register
 app.post("/register", (req, res) => {
@@ -166,10 +159,31 @@ app.post("/register", (req, res) => {
     res.status(400).send('Email already registered')
   } else {
     let newUserID = generateRandomString();
-    users[newUserID] = { id: newUserID, email: req.body.email, password: req.body.password };
+    let hashedPassword = bcrypt.hashSync(req.body.password, 10);
+    users[newUserID] = { id: newUserID, email: req.body.email, password: hashedPassword };
+    usersByEmail[req.body.email] = { password: hashedPassword, id: newUserID };
     res.cookie("user_id", newUserID);
     res.redirect("/urls");
   }
+});
+
+// login
+app.post("/login", (req, res) => {
+  if (!emailSearch(req.body.email)) {
+    res.status(403).send('Email or password not found')
+  } else if ((emailSearch(req.body.email)) && (!bcrypt.compareSync(req.body.password, usersByEmail[req.body.email].password))) {
+    res.status(403).send('Email or password not found')
+  } else {
+    const id = usersByEmail[req.body.email].id
+    res.cookie("user_id", id);
+    res.redirect("/urls");
+  }
+});
+
+// logout
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/urls");
 });
 
 
