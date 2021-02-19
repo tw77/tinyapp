@@ -75,8 +75,11 @@ app.get("/urls/new", (req, res) => {
 
 // Show / Edit URL page
 app.get("/urls/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(400).send('URL not found.');
+  } 
   const templateVars = { user: users[req.session["user_id"]], shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL};
+  longURL: urlDatabase[req.params.shortURL].longURL};
   res.render("urls_show", templateVars);
 });
 
@@ -97,6 +100,14 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 }); 
+
+// / page
+app.get("/", (req, res) => {
+  if (!req.session["user_id"]) {
+    res.redirect("/login");
+  }
+  res.redirect("/urls");
+});
 
 
 
