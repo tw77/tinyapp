@@ -36,13 +36,7 @@ const users = {
   }
 };
 
-const getUserByEmail = function(email, database) {
-  for (const user in database) {
-    if (email === database[user].email) {
-      return database[user];
-    }
-  }
-};
+const { getUserByEmail } = require('./helpers');
 
 function urlsForUser(id) {
   let personalDatabase = {};
