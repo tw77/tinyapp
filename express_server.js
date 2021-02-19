@@ -36,7 +36,7 @@ const users = {
 
 const { getUserByEmail } = require('./helpers');
 
-function urlsForUser(id) { // returns only the URLs added by a given user.
+const urlsForUser = function(id) { // returns only the URLs added by a given user.
   let personalDatabase = {};
   for (const url in urlDatabase) {
     if (id === urlDatabase[url].userID) {
@@ -44,11 +44,11 @@ function urlsForUser(id) { // returns only the URLs added by a given user.
     }
   }
   return personalDatabase;
-} 
+};
 
-function generateRandomString() {
+const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6);
-}
+};
 
 
 
