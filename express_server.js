@@ -59,7 +59,7 @@ function generateRandomString() {
 // My URLs index
 app.get("/urls", (req, res) => {
   if (!req.session["user_id"]) {
-    res.status(400).send('You are not logged in. Please log in or register.');
+    res.status(400).send(`You are not logged in. Please <a href="/login">log in</a> or <a href="/register">register</a>.`);
   }
   const templateVars = { user: users[req.session["user_id"]], urls: urlsForUser(req.session["user_id"]) };
   res.render("urls_index", templateVars);
