@@ -8,17 +8,15 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
+const cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: 'feb01',
+  keys: ['anything', 'you want']
+}));
 
 function generateRandomString() {
   return Math.random().toString(36).substr(2, 6);
 }
-
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 const urlDatabase = {
   "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "aJ48lW" },
@@ -70,43 +68,41 @@ function urlsForUser(id) {
 
 // My URLs index page
 app.get("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session["user_id"]) {
     res.status(400).send('You are not logged in. Please log in or register.')
   } else {
-    console.log("urlDatabase", urlDatabase);
-    const personalDatabase = urlsForUser(req.cookies["user_id"])
-    console.log("personal", personalDatabase);
-    const templateVars = { user: users[req.cookies["user_id"]], urls: personalDatabase };
+    const personalDatabase = urlsForUser(req.session["user_id"])
+    const templateVars = { user: users[req.session["user_id"]], urls: personalDatabase };
     res.render("urls_index", templateVars);
   }
 });
 
 // Create New URL page
 app.get("/urls/new", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session["user_id"]) {
     res.redirect("/login")
   } else {
-    const templateVars = { user: users[req.cookies["user_id"]] };
+    const templateVars = { user: users[req.session["user_id"]] };
     res.render("urls_new", templateVars);
   }
 });
 
 // Show / Edit URL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]], shortURL: req.params.shortURL,
+  const templateVars = { user: users[req.session["user_id"]], shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL};
   res.render("urls_show", templateVars);
 });
 
 // Register page
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session["user_id"]] };
   res.render("register", templateVars);
 });
 
 // Login page
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session["user_id"]] };
   res.render("login", templateVars);
 });
 
@@ -123,25 +119,24 @@ app.get("/u/:shortURL", (req, res) => {
 // add a new URL to the index
 app.post("/urls", (req, res) => {
   let newShortURL = generateRandomString();
-  // urlDatabase[newShortURL] = req.body.longURL;
-  urlDatabase[newShortURL] = { longURL: req.body.longURL, userID: req.cookies["user_id"] };
+  urlDatabase[newShortURL] = { longURL: req.body.longURL, userID: req.session["user_id"] };
   res.redirect("/urls"); 
 });
 
 // update the long URL of an existing URL in the index
 app.post("/urls/:shortURL", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session["user_id"]) {
     res.status(400).send('Please log in or register in order to edit URLs.')
   } else {
     const newLongURL = req.body.newLongURL;
-    urlDatabase[req.params.shortURL] = { longURL: newLongURL, userID: req.cookies["user_id"] };
+    urlDatabase[req.params.shortURL] = { longURL: newLongURL, userID: req.session["user_id"] };
     res.redirect("/urls");  
   }
 });
 
 // delete a URL from the index
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session["user_id"]) {
     res.status(400).send('Please log in or register in order to delete URLs.')
   } else {
     delete urlDatabase[req.params.shortURL];
@@ -162,7 +157,7 @@ app.post("/register", (req, res) => {
     let hashedPassword = bcrypt.hashSync(req.body.password, 10);
     users[newUserID] = { id: newUserID, email: req.body.email, password: hashedPassword };
     usersByEmail[req.body.email] = { password: hashedPassword, id: newUserID };
-    res.cookie("user_id", newUserID);
+    req.session.user_id = newUserID;
     res.redirect("/urls");
   }
 });
@@ -175,14 +170,14 @@ app.post("/login", (req, res) => {
     res.status(403).send('Email or password not found')
   } else {
     const id = usersByEmail[req.body.email].id
-    res.cookie("user_id", id);
+    req.session.user_id = id;
     res.redirect("/urls");
   }
 });
 
 // logout
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session.user_id = null;
   res.redirect("/urls");
 });
 
