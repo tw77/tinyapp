@@ -36,21 +36,13 @@ const users = {
   }
 };
 
-const usersByEmail = {
-  "user@example.com": {
-    password: "purple-monkey-dinosaur", 
-    id: "userRandomID" 
-  },
-  "user@example.com": {
-    password: "dishwasher-funk", 
-    id: "user2RandomID"
+const getUserByEmail = function(email, database) {
+  for (const user in database) {
+    if (email === database[user].email) {
+      return database[user];
+    }
   }
 };
-
-function emailSearch(emailToFind) {
-  if (JSON.stringify(users).includes(emailToFind)) return true;
-  else return false;
-}
 
 function urlsForUser(id) {
   let personalDatabase = {};
@@ -150,13 +142,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send('Missing input')
-  } else if (emailSearch(req.body.email)) {
+  } else if (getUserByEmail(req.body.email, users)) {
     res.status(400).send('Email already registered')
   } else {
     let newUserID = generateRandomString();
     let hashedPassword = bcrypt.hashSync(req.body.password, 10);
     users[newUserID] = { id: newUserID, email: req.body.email, password: hashedPassword };
-    usersByEmail[req.body.email] = { password: hashedPassword, id: newUserID };
     req.session.user_id = newUserID;
     res.redirect("/urls");
   }
@@ -164,12 +155,13 @@ app.post("/register", (req, res) => {
 
 // login
 app.post("/login", (req, res) => {
-  if (!emailSearch(req.body.email)) {
+  let matchingUser = getUserByEmail(req.body.email, users);
+  if (!getUserByEmail(req.body.email, users)) {
     res.status(403).send('Email or password not found')
-  } else if ((emailSearch(req.body.email)) && (!bcrypt.compareSync(req.body.password, usersByEmail[req.body.email].password))) {
-    res.status(403).send('Email or password not found')
+  } else if ((getUserByEmail(req.body.email, users)) && (!bcrypt.compareSync(req.body.password, matchingUser.password))) {
+      res.status(403).send('Email or password not found')
   } else {
-    const id = usersByEmail[req.body.email].id
+    const id = matchingUser.id;
     req.session.user_id = id;
     res.redirect("/urls");
   }
