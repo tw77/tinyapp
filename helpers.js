@@ -1,3 +1,7 @@
+const generateRandomString = function () {
+  return Math.random().toString(36).substr(2, 6);
+};
+
 const getUserByEmail = function (email, database) {
   for (const user in database) {
     if (email === database[user].email) {
@@ -6,4 +10,4 @@ const getUserByEmail = function (email, database) {
   }
 };
 
-module.exports = { getUserByEmail };
+module.exports = { generateRandomString, getUserByEmail };

@@ -1,14 +1,15 @@
 const bcrypt = require("bcryptjs");
 const express = require("express");
+const bodyParser = require("body-parser");
+const cookieSession = require("cookie-session");
+const { generateRandomString, getUserByEmail } = require("./helpers");
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
 
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const cookieSession = require("cookie-session");
 app.use(
   cookieSession({
     name: "name",
@@ -34,8 +35,6 @@ const users = {
   },
 };
 
-const { getUserByEmail } = require("./helpers");
-
 const urlsForUser = function (id) {
   // returns only the URLs added by a given user.
   let personalDatabase = {};
@@ -47,9 +46,7 @@ const urlsForUser = function (id) {
   return personalDatabase;
 };
 
-const generateRandomString = function () {
-  return Math.random().toString(36).substr(2, 6);
-};
+
 
 // GET method routes:
 
