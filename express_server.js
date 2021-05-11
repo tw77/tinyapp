@@ -46,8 +46,6 @@ const urlsForUser = function (id) {
   return personalDatabase;
 };
 
-
-
 // GET method routes:
 
 // My URLs index
